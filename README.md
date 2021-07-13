@@ -5,12 +5,12 @@ Database assignment
 
 ### Requirements
 
-Run: `setup.sh`. It will install the PostgreSQL libraries. You can install
+Run: `./setup.sh`. It will install the PostgreSQL libraries. You can install
 them yourself too.
 
 ### Build
 
-Run: `<some command here>` to build.
+Run: `./build.sh` to build.
 
 ## Running
 
