@@ -10,11 +10,17 @@ void erro(std::string mensagemErro)
     return;
 }
 
+/* 
+mostra informações sobre o projeto.
+*/
 void info(){
     std::string mensagemInfo;
     mensagemInfo = std::string()+
     "Esse programa foi realizado com muito carinho em Julho de 2021 para a "+
-    "disciplina de Banco de Dados (SCC0240) da USP de Sao Carlos."+
+    "disciplina de Banco de Dados (SCC0240) da USP de Sao Carlos.\n"+
+    "\n"+
+    "Ele é um sistema de chat de um sistema fictício, o BlaBlaTravel, "+
+    "que permite que turistas e guias turísticos marquem encontros entre si.\n"+
     "\n"+
     "Github do projeto: https://github.com/henriquenunez/blablatravel\n"+
     "\n"+
@@ -27,6 +33,9 @@ void info(){
     return;
 }
 
+/*
+mostra a tela de ajuda com os comandos disponiveis.
+*/
 void ajuda(){
     std::string mensagemAjuda;
     mensagemAjuda = std::string()+
@@ -48,6 +57,7 @@ void ajuda(){
 
 /*
 shell interativa que recebe o input do usuario e executa os comandos.
+fica em loop recebendo os comandos do usuário até ser encerrada.
 */
 void shell()
 {
