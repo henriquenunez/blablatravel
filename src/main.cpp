@@ -1,16 +1,15 @@
 #include <iostream>
 #include <string>
 #include <pqxx/pqxx>
+#include "blablatable.h"
 
 struct mensagem
 {
-    //Email do usuário
-    std::string usuarioEmail;
-    //Estado (logado/deslogado)
-    bool logged = false;
+    std::string usuarioEmail; //Email do usuário
+    bool logged = false; //Estado (logado/deslogado)
     
     /*
-    imprime uma mensagem de erro na shell.
+    Imprime uma mensagem de erro na shell.
     */
     void erro(std::string mensagemErro)
     {
@@ -19,7 +18,7 @@ struct mensagem
     }
     
     /*
-    mostra informações sobre o projeto.
+    Mostra informações sobre o projeto.
     */
     void info()
     {
@@ -43,7 +42,7 @@ struct mensagem
     }
     
     /*
-    mostra a tela de ajuda com os comandos disponiveis.
+    Mostra a tela de ajuda com os comandos disponiveis.
     */
     void ajuda()
     {
@@ -68,7 +67,7 @@ struct mensagem
     }
     
     /*
-    efetua o login do usuario com sua senha no sistema.
+    Efetua o login do usuario com sua senha no sistema.
     */
     void login()
     {
@@ -83,11 +82,10 @@ struct mensagem
     
         std::string email;
         std::getline(std::cin, email);
-        bool validadeEmail = true;
-        // [help] VALIDA email, se for errado faz virar false
+        bool validadeEmail = existeEmail(email);
         if (!validadeEmail)
         {
-            erro("Email inválido. Tente novamente.");
+            erro("email inválido. Tente novamente.");
             return;
         }
     
@@ -96,12 +94,10 @@ struct mensagem
 
         std::string senha;
         std::getline(std::cin, senha);
-        bool validadeSenha = true;
-
-        // [help] VALIDA SENHA, se for errada faz virar false
+        bool validadeSenha = matchEmailSenha(email, senha);
         if (!validadeSenha)
         {
-            erro("Senha inválida. Tente novamente.");
+            erro("senha inválida. Tente novamente.");
             return;
         }
 
@@ -114,7 +110,7 @@ struct mensagem
     }
     
     /*
-    faz logout do usuario.
+    Faz logout do usuario.
     */
     void logout()
     {
@@ -133,13 +129,13 @@ struct mensagem
     }
     
     /*
-    mostra as últimas mensagens do usuário na tela.
+    Mostra as últimas mensagens do usuário na tela.
     ┌─────────
     │ 1/2/2018 bob@gmail.com
-    │ hey bro! I was wondering if...
+    │ (você) eai mano, de boa? vo...
     ├─────────
     │ 1/2/2016 alice@gmail.com
-    │ wassup? can you help with...
+    │ hahaha daquela vez eu nã...
     └─────────
     */
     void chat()
@@ -156,17 +152,21 @@ struct mensagem
     }
 
     /*
-    mostra as ultimas mensagens com um contato especifico.
+    Mostra as ultimas mensagens com um contato especifico.
     ┌─────────
     │ 1/2/2018 bob@gmail.com
-    │ hey bro! I was wondering if...
+    │ (você) eai mano, de boa? vo...
     ├─────────
     │ 1/2/2016 alice@gmail.com
-    │ wassup? can you help with...
+    │ hahaha daquela vez eu nã...
     └─────────
     */
     void ler(){
-
+        if (!logged)
+        {
+            erro("faça login para ver suas mensagens com alguém.");
+            return;
+        }
     }
 
     /*
@@ -174,9 +174,16 @@ struct mensagem
     */
     void novaMensagem(std::string destinatario)
     {
-        /*
-        [help] checa se o email destinatario é valido
-        */
+        if (!existeEmail(destinatario))
+        {
+            erro("Esse usuário não existe.");
+            return;
+        }
+        if (destinatario == usuarioEmail)
+        {
+            erro("Você não pode enviar uma mensagem para si mesmo.");
+            return;
+        }
 
         std::string prompt = std::string()+
         "Nova mensagem para ["+destinatario+"]:\n"+
@@ -185,36 +192,11 @@ struct mensagem
         std::string mensagemDestinatario;
         std::getline(std::cin, mensagemDestinatario);
         
-        /*
-        [help] envia a mensagem
-        */
-        std::cout << mensagemDestinatario << std::endl;
+        enviaMensagem(usuarioEmail, destinatario, mensagemDestinatario);
     }
 
     /*
-    retorna uma lista com as últimas nPessoas que o usuario conversou.
-    se tiverem menos de nPessoas, retorna o máximo possível.
-    [help] - implementar isso.
-    */
-    std::vector<std::string> ultimasPessoas(int nPessoas)
-    {
-        std::vector<std::string> pessoas = 
-        {
-            "dikson@gmail.com", 
-            "breno@gmail.com",
-            "hiram@gmail.com",
-            "joao@gmail.com",
-            "marcos@gmail.com"
-        };
-        if (pessoas.size() > nPessoas) 
-        {
-            pessoas.resize(nPessoas);
-        }
-        return pessoas;
-    }
-    
-    /*
-    envia uma nova mensagem.
+    Pede informação ao usuário para enviar uma nova mensagem.
     */
     void enviar()
     {
@@ -225,7 +207,7 @@ struct mensagem
         }
 
         int nPessoas = 3;
-        std::vector<std::string> listaPessoas = ultimasPessoas(nPessoas);
+        std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
         nPessoas = listaPessoas.size();
 
         std::string prompt = "Com quem você quer conversar?";
@@ -260,7 +242,7 @@ struct mensagem
             }
             if (flagNumero) 
             {
-                erro("Digite um número válido.");
+                erro("digite um número válido.");
             }
             else 
             {
