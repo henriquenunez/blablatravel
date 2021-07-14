@@ -1,10 +1,14 @@
 #include <iostream>
 #include <string>
-
 #include <pqxx/pqxx>
 
-struct messages
+struct mensagem
 {
+    //Email do usuário
+    std::string usuarioEmail;
+    //Estado (logado/deslogado)
+    bool logged = false;
+    
     /*
     imprime uma mensagem de erro na shell.
     */
@@ -56,6 +60,7 @@ struct messages
         "logout - Desloga da sua conta.\n"+
         "chat - Mostra as ultimas mensagens.\n"+
         "enviar - Envia uma nova mensagem.\n"+
+        "ler - Mostra as mensagens com um contato.\n"+
         "info - Um pouco mais sobre o projeto.\n"+
         "sair - Finaliza a aplicacao.\n";
         std::cout << mensagemAjuda;
@@ -65,7 +70,7 @@ struct messages
     /*
     efetua o login do usuario com sua senha no sistema.
     */
-    void login(std::string& usuarioCPF, bool& logged)
+    void login()
     {
         if (logged)
         {
@@ -73,44 +78,25 @@ struct messages
             return;
         }
     
-        std::string prompt = "CPF: ";
+        std::string prompt = "Email: ";
         std::cout << prompt;
     
-        std::string CPF;
-        std::getline(std::cin, CPF);
-        bool validadeCPF = true;
-        // [help] VALIDA CPF, se for errado faz virar false
-        if (!validadeCPF)
+        std::string email;
+        std::getline(std::cin, email);
+        bool validadeEmail = true;
+        // [help] VALIDA email, se for errado faz virar false
+        if (!validadeEmail)
         {
-            erro("CPF Inválido. Tente novamente.");
+            erro("Email inválido. Tente novamente.");
             return;
         }
     
         prompt = "Senha: ";
         std::cout << prompt;
-    
+
         std::string senha;
         std::getline(std::cin, senha);
-	bool validadeSenha = false;
-
-	// Pesquisa no banco de dados por alguem com esse email e senha
-	std::string q = "SELECT SENHA FROM USUARIO WHERE EMAIL = '";
-	q += CPF;
-	q += "'";
-
-        /* Create a non-transactional object. */
-	pqxx::nontransaction N(*C);
-
-        /* Execute SQL query */
-	pqxx::result R( N.exec( q ));
-
-        /* List down all the records */
-        for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c) {
-	    std::string acq_senha = c[0].as<std::string>();
-	    if (senha.compare(acq_senha) == 0) validadeSenha = true;
-	    break;
-        }
-	std::cout << "Operation done successfully" << std::endl;
+        bool validadeSenha = true;
 
         // [help] VALIDA SENHA, se for errada faz virar false
         if (!validadeSenha)
@@ -119,9 +105,9 @@ struct messages
             return;
         }
 
-        usuarioCPF = CPF;
+        usuarioEmail = email;
 
-	logged = true;
+        logged = true;
         std::string sucesso = "Logado com sucesso!";
         std::cout << sucesso << std::endl;
         return;
@@ -130,7 +116,7 @@ struct messages
     /*
     faz logout do usuario.
     */
-    void logout(std::string& usuario, bool& logged)
+    void logout()
     {
         if (!logged)
         {
@@ -138,7 +124,7 @@ struct messages
             return;
         }
     
-        usuario.clear();
+        usuarioEmail.clear();
         logged = false;
     
         std::string sucesso = "Desconectado. Até mais! ;)";
@@ -149,7 +135,7 @@ struct messages
     /*
     mostra as últimas mensagens do usuário na tela.
     */
-    void chat(const std::string& usuario, const bool& logged)
+    void chat()
     {
         if (!logged)
         {
@@ -165,7 +151,7 @@ struct messages
     /*
     envia uma nova mensagem.
     */
-    void enviar(const std::string& usuario, const bool& logged)
+    void enviar()
     {
         if (!logged){
             erro("você precisa fazer login pra enviar uma mensagem.");
@@ -175,13 +161,20 @@ struct messages
         std::cout << "ainda nao foi implementado kkkk" << std::endl;
         return;
     }
-    
+
+    /*
+    mostra as ultimas mensagens com um contato especifico.
+    */
+    void ler(){
+
+    }
+
     /*
     Inicialização da comunicação com o banco de dados.
     */
     void init_db()
     {
-	std::cout << "Initializing database...\n";
+        std::cout << "Initializing database...\n";
         try { // dbname = public 
            C = new pqxx::connection("user = postgres password = postgres123 \
            hostaddr = 127.0.0.1 port = 5432");
@@ -199,13 +192,13 @@ struct messages
     
     void close_db()
     {
-          C->close();
-	  delete C;
+        C->close();
+        delete C;
     }
     
     /*
-    shell interativa que recebe o input do usuario e executa os comandos.
-    fica em loop recebendo os comandos do usuário até ser encerrada.
+    Shell interativa que recebe o input do usuario e executa os comandos.
+    Fica em loop recebendo os comandos do usuário até ser encerrada.
     */
     void shell()
     {
@@ -214,9 +207,7 @@ struct messages
         "# Bem vindo ao chat blablatravel!\n"+
         "# Digite \"ajuda\" para mais informacoes.\n";
         std::cout << bemVindo;
-        //CPF do usuário
-        std::string usuarioCPF; 
-        bool logged = false;
+        
     
         while(true)
         {
@@ -234,18 +225,21 @@ struct messages
             }
             else if (comando == "login")
             {
-                login(usuarioCPF, logged);
+                login();
             }
             else if (comando == "logout")
             {
-                logout(usuarioCPF, logged);
+                logout();
             }
             else if (comando == "chat") 
             {
-                chat(usuarioCPF, logged);
+                chat();
             }
             else if (comando == "enviar"){
-                enviar(usuarioCPF, logged);
+                enviar();
+            }
+            else if (comando == "ler"){
+                ler();
             }
             else if (comando == "info")
             {
@@ -273,7 +267,7 @@ struct messages
 
 int main()
 {
-    messages estado;
+    mensagem estado;
     estado.init_db();
     estado.shell();
     return 0;
