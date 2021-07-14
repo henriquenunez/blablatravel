@@ -196,13 +196,14 @@ struct mensagem
 
         int nPessoas = 3;
         std::vector<std::string> listaPessoas = ultimasPessoas(nPessoas);
+        nPessoas = listaPessoas.size();
 
         std::string prompt = "Com quem você quer conversar?";
         std::cout << prompt << std::endl;
         std::cout << "0 - Cancelar" << std::endl;
         std::cout << "1 - Nova conversa" << std::endl;
-        for (int i=0; i<listaPessoas; i++){
-            std::cout << i+2 << " - " << listaPessoas[i] << endl;
+        for (int i=0; i<listaPessoas.size(); i++){
+            std::cout << i+2 << " - " << listaPessoas[i] << std::endl;
         }
 
         int indiceDestinatario;
@@ -211,7 +212,8 @@ struct mensagem
             prompt = "=> ";
             std::cout << prompt;
             std::cin >> indiceDestinatario;
-            if (!cin or indiceDestinatario < 0 or indiceDestinatario > n+1){
+            if (!std::cin or indiceDestinatario < 0 
+            or indiceDestinatario > nPessoas+1){
                 erro("Número não reconhecido. Tente novamente");
             }
         }
