@@ -6,8 +6,8 @@
 
 struct mensagem
 {
-    std::string usuarioEmail; //Email do usuário
-    bool logged = false; //Estado (logado/deslogado)
+    std::string usuarioEmail; // Email do usuário
+    bool logged = false; // Estado (logado/deslogado)
     
     /*
     Imprime uma mensagem de erro na shell.
@@ -16,6 +16,48 @@ struct mensagem
     {
         std::cout << "ERRO: " << mensagemErro << std::endl;
         return;
+    }
+
+    /*
+    Mostra uma lista de opções e retorna uma escolha entre elas.
+    */
+    int escolheDaLista(std::vector<std::string> opcoes)
+    {
+        for (int i=0; i<(int)opcoes.size(); i++)
+        {
+            std::cout << i << " - " << opcoes[i] << std::endl;
+        }
+
+        while(true)
+        {
+            std::string prompt = "Digite um número: ";
+            std::cout << prompt;
+            int opcao;
+            std::string strOpcao;
+            std::getline(std::cin, strOpcao);
+            bool flagOpcao = false;
+            try 
+            {
+                opcao = stoi(strOpcao);
+            }
+            catch(...) 
+            {
+                flagOpcao = true;
+            }
+            if (opcao < 0 or opcao >= (int)opcoes.size())
+            {
+                flagOpcao = true;
+            }
+            if (flagOpcao) 
+            {
+                erro("digite um número válido.");
+            }
+            else 
+            {
+                return opcao;
+            }
+        }
+
     }
     
     /*
@@ -129,12 +171,45 @@ struct mensagem
         return;
     }
     
-    void mostraMensagens(std::vector<msg>& mensagens)
+    void mostraMensagens(std::vector<msg>& mensagens, int tamanhoMaxMsg)
     {
-        for (auto msgAtual: mensagens)
+        int tamanhoLinha = tamanhoMaxMsg;
+        std::string reta;
+        for (int i=0; i<tamanhoLinha; i++)
         {
-            std::cout << msgAtual.conteudoMensagem << std::endl;
+            reta += std::string("─");
         }
+        std::string tela;
+
+        for (int i=0; i<(int)mensagens.size(); i++)
+        {
+            if (i == 0)
+            {
+                tela += std::string("┌");
+            }
+            else 
+            {
+                tela += std::string("├");
+            }
+            tela += reta + "\n";
+
+            msg atual = mensagens[i];
+
+            // reduz o tamanho da mensagem pra caber na tela
+            if (tamanhoMaxMsg != -1 and 
+                atual.conteudoMensagem.size() > tamanhoMaxMsg)
+            {
+                atual.conteudoMensagem.resize(tamanhoMaxMsg);
+                atual.conteudoMensagem += std::string(3, '.');
+            }
+
+            tela += std::string()+ 
+            "│ " + atual.timeStamp + " " + atual.remetente + "\n"+
+            "│ " + atual.conteudoMensagem + "\n";
+            
+        }
+        tela += std::string("└") + reta + "\n";
+        std::cout << tela;
         return;
     }
 
@@ -161,7 +236,8 @@ struct mensagem
             usuarioEmail,
             nMensagens);
         
-        mostraMensagens(mensagensParaMostrar);
+        int tamanhoMaxMsg = 40;
+        mostraMensagens(mensagensParaMostrar, tamanhoMaxMsg);
         return;
     }
 
@@ -175,14 +251,13 @@ struct mensagem
     │ hahaha daquela vez eu nã...
     └─────────
     */
-    void ler(){
+    void ler()
+    {
         if (!logged)
         {
             erro("faça login para ver suas mensagens com alguém.");
             return;
         }
-
-        
     }
 
     /*
@@ -224,47 +299,18 @@ struct mensagem
 
         int nPessoas = 3;
         std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
-        nPessoas = listaPessoas.size();
 
         std::string prompt = "Com quem você quer conversar?";
         std::cout << prompt << std::endl;
-        std::cout << "0 - Cancelar" << std::endl;
-        std::cout << "1 - Nova conversa" << std::endl;
-        for (int i=0; i<listaPessoas.size(); i++)
-        {
-            std::cout << i+2 << " - " << listaPessoas[i] << std::endl;
-        }
 
-        int indiceDestinatario;
+        std::vector<std::string> listaOpcoes = {"Cancelar", "Nova conversa"};
+        listaOpcoes.insert(
+            listaOpcoes.end(), 
+            listaPessoas.begin(), 
+            listaPessoas.end());
 
-        while(true)
-        {
-            prompt = "Digite um número: ";
-            std::cout << prompt;
-            std::string strIndiceDestinatario;
-            std::getline(std::cin, strIndiceDestinatario);
-            bool flagNumero = false;
-            try 
-            {
-                indiceDestinatario = stoi(strIndiceDestinatario);
-            }
-            catch(...) 
-            {
-                flagNumero = true;
-            }
-            if (indiceDestinatario < 0 or indiceDestinatario > nPessoas+1)
-            {
-                flagNumero = true;
-            }
-            if (flagNumero) 
-            {
-                erro("digite um número válido.");
-            }
-            else 
-            {
-                break;
-            }
-        }
+
+        int indiceDestinatario = escolheDaLista(listaOpcoes);
 
         if (indiceDestinatario == 0)
         {
