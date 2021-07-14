@@ -1,21 +1,67 @@
 #include <iostream>
 #include <string>
-
 #include <pqxx/pqxx>
+#include "blablatable.h"
+#include "msgsUsuarios.h"
 
-struct messages
+struct mensagem
 {
+    std::string usuarioEmail; // Email do usuário
+    bool logged = false; // Estado (logado/deslogado)
+    
     /*
-    imprime uma mensagem de erro na shell.
+    Imprime uma mensagem de erro na shell.
     */
     void erro(std::string mensagemErro)
     {
         std::cout << "ERRO: " << mensagemErro << std::endl;
         return;
     }
+
+    /*
+    Mostra uma lista de opções e retorna uma escolha entre elas.
+    */
+    int escolheDaLista(std::vector<std::string> opcoes)
+    {
+        for (int i=0; i<(int)opcoes.size(); i++)
+        {
+            std::cout << i << " - " << opcoes[i] << std::endl;
+        }
+
+        while(true)
+        {
+            std::string prompt = "Digite um número: ";
+            std::cout << prompt;
+            int opcao;
+            std::string strOpcao;
+            std::getline(std::cin, strOpcao);
+            bool flagOpcao = false;
+            try 
+            {
+                opcao = stoi(strOpcao);
+            }
+            catch(...) 
+            {
+                flagOpcao = true;
+            }
+            if (opcao < 0 or opcao >= (int)opcoes.size())
+            {
+                flagOpcao = true;
+            }
+            if (flagOpcao) 
+            {
+                erro("digite um número válido.");
+            }
+            else 
+            {
+                return opcao;
+            }
+        }
+
+    }
     
     /*
-    mostra informações sobre o projeto.
+    Mostra informações sobre o projeto.
     */
     void info()
     {
@@ -39,7 +85,7 @@ struct messages
     }
     
     /*
-    mostra a tela de ajuda com os comandos disponiveis.
+    Mostra a tela de ajuda com os comandos disponiveis.
     */
     void ajuda()
     {
@@ -55,6 +101,7 @@ struct messages
         "login - Loga com a sua conta.\n"+
         "logout - Desloga da sua conta.\n"+
         "chat - Mostra as ultimas mensagens.\n"+
+        "ler - Mostra as mensagens com um contato.\n"+
         "enviar - Envia uma nova mensagem.\n"+
         "info - Um pouco mais sobre o projeto.\n"+
         "sair - Finaliza a aplicacao.\n";
@@ -63,9 +110,9 @@ struct messages
     }
     
     /*
-    efetua o login do usuario com sua senha no sistema.
+    Efetua o login do usuario com sua senha no sistema.
     */
-    void login(std::string& usuarioCPF, bool& logged)
+    void login()
     {
         if (logged)
         {
@@ -73,64 +120,42 @@ struct messages
             return;
         }
     
-        std::string prompt = "CPF: ";
+        std::string prompt = "Email: ";
         std::cout << prompt;
     
-        std::string CPF;
-        std::getline(std::cin, CPF);
-        bool validadeCPF = true;
-        // [help] VALIDA CPF, se for errado faz virar false
-        if (!validadeCPF)
+        std::string email;
+        std::getline(std::cin, email);
+        bool validadeEmail = existeEmail(email);
+        if (!validadeEmail)
         {
-            erro("CPF Inválido. Tente novamente.");
+            erro("email inválido. Tente novamente.");
             return;
         }
     
         prompt = "Senha: ";
         std::cout << prompt;
-    
+
         std::string senha;
         std::getline(std::cin, senha);
-	bool validadeSenha = false;
-
-	// Pesquisa no banco de dados por alguem com esse email e senha
-	std::string q = "SELECT SENHA FROM USUARIO WHERE EMAIL = '";
-	q += CPF;
-	q += "'";
-
-        /* Create a non-transactional object. */
-	pqxx::nontransaction N(*C);
-
-        /* Execute SQL query */
-	pqxx::result R( N.exec( q ));
-
-        /* List down all the records */
-        for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c) {
-	    std::string acq_senha = c[0].as<std::string>();
-	    if (senha.compare(acq_senha) == 0) validadeSenha = true;
-	    break;
-        }
-	std::cout << "Operation done successfully" << std::endl;
-
-        // [help] VALIDA SENHA, se for errada faz virar false
+        bool validadeSenha = matchEmailSenha(email, senha);
         if (!validadeSenha)
         {
-            erro("Senha inválida. Tente novamente.");
+            erro("senha inválida. Tente novamente.");
             return;
         }
 
-        usuarioCPF = CPF;
+        usuarioEmail = email;
 
-	logged = true;
+        logged = true;
         std::string sucesso = "Logado com sucesso!";
         std::cout << sucesso << std::endl;
         return;
     }
     
     /*
-    faz logout do usuario.
+    Faz logout do usuário.
     */
-    void logout(std::string& usuario, bool& logged)
+    void logout()
     {
         if (!logged)
         {
@@ -138,7 +163,7 @@ struct messages
             return;
         }
     
-        usuario.clear();
+        usuarioEmail.clear();
         logged = false;
     
         std::string sucesso = "Desconectado. Até mais! ;)";
@@ -146,42 +171,212 @@ struct messages
         return;
     }
     
+    void mostraMensagens(std::vector<msg>& mensagens)
+    {
+        if (mensagens.empty())
+        {
+            std::cout << "Nada pra mostrar por aqui..." << std::endl;
+            return;
+        }
+        int tamanhoLinha = 10;
+        std::string reta;
+        for (int i=0; i<tamanhoLinha; i++)
+        {
+            reta += std::string("─");
+        }
+        std::string tela;
+
+        for (int i=0; i<(int)mensagens.size(); i++)
+        {
+            tela += std::string("┌") + reta + "\n";
+
+            msg atual = mensagens[i];
+            std::string prefixo, outraPessoa;
+            if (atual.remetente == usuarioEmail)
+            {
+                prefixo = "(você) ";
+                outraPessoa = atual.destinatario;
+            }
+            else
+            {
+                outraPessoa = atual.remetente;
+            }
+        
+
+            tela += std::string()+ 
+            "│ " + outraPessoa + "\n"+
+            "│ " + atual.timeStamp + "\n"+
+            "│ " + prefixo + atual.conteudoMensagem + "\n";
+            
+        }
+        std::cout << tela;
+        return;
+    }
+
     /*
-    mostra as últimas mensagens do usuário na tela.
+    Mostra as últimas mensagens do usuário na tela.
+    ┌─────────
+    │ 1/2/2018 bob@gmail.com
+    │ (você) eai mano, de boa? vo...
+    ├─────────
+    │ 1/2/2016 alice@gmail.com
+    │ hahaha daquela vez eu nã...
+    └─────────
     */
-    void chat(const std::string& usuario, const bool& logged)
+    void chat()
     {
         if (!logged)
         {
             erro("você precisa fazer login para ver suas mensagens.");
             return;
         }
-    
+
+        int nMensagens = 6;
+        std::vector<msg> mensagensParaMostrar = ultimasMensagens(
+            usuarioEmail,
+            nMensagens);
         
-        std::cout << "ainda nao foi implementado kkkk" << std::endl;
+        mostraMensagens(mensagensParaMostrar);
         return;
     }
-    
+
     /*
-    envia uma nova mensagem.
+    Mostra as ultimas mensagens com um contato especifico.
+    ┌─────────
+    │ 1/2/2018 bob@gmail.com
+    │ (você) eai mano, de boa? vo...
+    ├─────────
+    │ 1/2/2016 alice@gmail.com
+    │ hahaha daquela vez eu nã...
+    └─────────
     */
-    void enviar(const std::string& usuario, const bool& logged)
+    void ler()
     {
-        if (!logged){
+        if (!logged)
+        {
+            erro("faça login para ver suas mensagens com alguém.");
+            return;
+        }
+        int nMensagens = 6;
+        int nPessoas = 5;
+        std::string outraPessoa;
+
+        std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
+        std::vector<std::string> listaOpcoes = {"Cancelar", "Outro usuário"};
+        listaOpcoes.insert(
+            listaOpcoes.end(), 
+            listaPessoas.begin(), 
+            listaPessoas.end());
+
+        int indiceDestinatario = escolheDaLista(listaOpcoes);
+
+        if (indiceDestinatario == 0)
+        {
+            return;
+        }
+        else if (indiceDestinatario != 1)
+        {
+            outraPessoa = listaPessoas[indiceDestinatario-2];
+        }
+        else {
+            std::string destinatario;
+            std::cout << "Digite o email do usuário: ";
+            std::getline(std::cin, destinatario);
+            if (!existeEmail(destinatario))
+            {
+                erro("Esse usuário não existe.");
+                return;
+            }
+            outraPessoa = destinatario;
+        }
+
+        std::vector<msg> mensagensParaMostrar = ultimasMensagensIndividuais(
+            usuarioEmail,
+            outraPessoa,
+            nMensagens);
+        
+        reverse(mensagensParaMostrar.begin(), mensagensParaMostrar.end());
+        
+        mostraMensagens(mensagensParaMostrar);
+        return;
+    }
+
+    /*
+    envia uma nova mensagem para o email `destinatario`
+    */
+    void novaMensagem(std::string destinatario)
+    {
+        if (!existeEmail(destinatario))
+        {
+            erro("Esse usuário não existe.");
+            return;
+        }
+        if (destinatario == usuarioEmail)
+        {
+            erro("Você não pode enviar uma mensagem para si mesmo.");
+            return;
+        }
+
+        std::string prompt = std::string()+
+        "Nova mensagem para ["+destinatario+"]:\n"+
+        "[>] ";
+        std::cout << prompt;
+        std::string mensagemDestinatario;
+        std::getline(std::cin, mensagemDestinatario);
+        
+        enviaMensagem(usuarioEmail, destinatario, mensagemDestinatario);
+    }
+
+    /*
+    Pede informação ao usuário para enviar uma nova mensagem.
+    */
+    void enviar()
+    {
+        if (!logged)
+        {
             erro("você precisa fazer login pra enviar uma mensagem.");
             return;
         }
-    
-        std::cout << "ainda nao foi implementado kkkk" << std::endl;
+
+        int nPessoas = 4;
+        std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
+
+        std::string prompt = "Com quem você quer conversar?";
+        std::cout << prompt << std::endl;
+
+        std::vector<std::string> listaOpcoes = {"Cancelar", "Nova conversa"};
+        listaOpcoes.insert(
+            listaOpcoes.end(), 
+            listaPessoas.begin(), 
+            listaPessoas.end());
+
+
+        int indiceDestinatario = escolheDaLista(listaOpcoes);
+
+        if (indiceDestinatario == 0)
+        {
+            return;
+        }
+        else if (indiceDestinatario != 1)
+        {
+            novaMensagem(listaPessoas[indiceDestinatario-2]);
+        }
+        else {
+            std::string destinatario;
+            std::cout << "Digite o email do recipiente: ";
+            std::getline(std::cin, destinatario);
+            novaMensagem(destinatario);
+        }
+        
         return;
     }
-    
+
     /*
     Inicialização da comunicação com o banco de dados.
     */
     void init_db()
     {
-	std::cout << "Initializing database...\n";
+        std::cout << "Initializing database...\n";
         try { // dbname = public 
            C = new pqxx::connection("user = postgres password = postgres123 \
            hostaddr = 127.0.0.1 port = 5432");
@@ -199,13 +394,13 @@ struct messages
     
     void close_db()
     {
-          C->close();
-	  delete C;
+        C->close();
+        delete C;
     }
     
     /*
-    shell interativa que recebe o input do usuario e executa os comandos.
-    fica em loop recebendo os comandos do usuário até ser encerrada.
+    Shell interativa que recebe o input do usuario e executa os comandos.
+    Fica em loop recebendo os comandos do usuário até ser encerrada.
     */
     void shell()
     {
@@ -214,9 +409,7 @@ struct messages
         "# Bem vindo ao chat blablatravel!\n"+
         "# Digite \"ajuda\" para mais informacoes.\n";
         std::cout << bemVindo;
-        //CPF do usuário
-        std::string usuarioCPF; 
-        bool logged = false;
+        
     
         while(true)
         {
@@ -234,18 +427,23 @@ struct messages
             }
             else if (comando == "login")
             {
-                login(usuarioCPF, logged);
+                login();
             }
             else if (comando == "logout")
             {
-                logout(usuarioCPF, logged);
+                logout();
             }
             else if (comando == "chat") 
             {
-                chat(usuarioCPF, logged);
+                chat();
             }
-            else if (comando == "enviar"){
-                enviar(usuarioCPF, logged);
+            else if (comando == "ler")
+            {
+                ler();
+            }
+            else if (comando == "enviar")
+            {
+                enviar();
             }
             else if (comando == "info")
             {
@@ -273,7 +471,7 @@ struct messages
 
 int main()
 {
-    messages estado;
+    mensagem estado;
     estado.init_db();
     estado.shell();
     return 0;
