@@ -147,6 +147,42 @@ struct mensagem
         std::cout << "ainda nao foi implementado kkkk" << std::endl;
         return;
     }
+
+    /*
+    envia uma nova mensagem para o email `destinatario`
+    */
+    void novaMensagem(std::string destinatario)
+    {
+        /*
+        checa se destinatario é valido e manda mensagem
+        */
+        std::string prompt = "=> ";
+        std::cout << prompt;
+        std::string mensagemDestinatario;
+        std::cin >> mensagemDestinatario;
+    }
+
+    /*
+    retorna uma lista com as últimas nPessoas que o usuario conversou.
+    se tiverem menos de nPessoas, retorna o máximo possível.
+    [help] - implementar isso.
+    */
+    std::vector<std::string> ultimasPessoas(int nPessoas)
+    {
+        std::vector<std::string> pessoas = 
+        {
+            "dikson@gmail.com", 
+            "breno@gmail.com",
+            "hiram@gmail.com",
+            "joao@gmail.com",
+            "marcos@gmail.com"
+        };
+        if (pessoas.size() < nPessoas) 
+        {
+            pessoas.resize(nPessoas);
+        }
+        return pessoas;
+    }
     
     /*
     envia uma nova mensagem.
@@ -157,8 +193,46 @@ struct mensagem
             erro("você precisa fazer login pra enviar uma mensagem.");
             return;
         }
-    
-        std::cout << "ainda nao foi implementado kkkk" << std::endl;
+
+        int nPessoas = 3;
+        std::vector<std::string> listaPessoas = ultimasPessoas(nPessoas);
+
+        std::string prompt = "Com quem você quer conversar?";
+        std::cout << prompt << std::endl;
+        std::cout << "0 - Cancelar" << std::endl;
+        std::cout << "1 - Nova conversa" << std::endl;
+        for (int i=0; i<listaPessoas; i++){
+            std::cout << i+2 << " - " << listaPessoas[i] << endl;
+        }
+
+        int indiceDestinatario;
+
+        while(true){
+            prompt = "=> ";
+            std::cout << prompt;
+            std::cin >> indiceDestinatario;
+            if (!cin or indiceDestinatario < 0 or indiceDestinatario > n+1){
+                erro("Número não reconhecido. Tente novamente");
+            }
+        }
+
+        
+
+        if (indiceDestinatario == 0)
+        {
+            return;
+        }
+        else if (indiceDestinatario != 1)
+        {
+            novaMensagem(listaPessoas[indiceDestinatario-2]);
+        }
+        else {
+            std::string destinatario;
+            std::cout << "Digite o email do recipiente: ";
+            std::cin >> destinatario;
+            novaMensagem(destinatario);
+        }
+        
         return;
     }
 
