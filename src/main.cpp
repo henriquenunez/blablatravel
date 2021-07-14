@@ -154,12 +154,20 @@ struct mensagem
     void novaMensagem(std::string destinatario)
     {
         /*
-        checa se destinatario é valido e manda mensagem
+        [help] checa se o email destinatario é valido
         */
-        std::string prompt = "=> ";
+        
+        std::string prompt = std::string()+
+        "Nova mensagem para ["+destinatario+"]:\n"+
+        "[>] ";
         std::cout << prompt;
         std::string mensagemDestinatario;
-        std::cin >> mensagemDestinatario;
+        std::getline(std::cin, mensagemDestinatario);
+        
+        /*
+        [help] envia a mensagem
+        */
+        std::cout << mensagemDestinatario << std::endl;
     }
 
     /*
@@ -177,7 +185,7 @@ struct mensagem
             "joao@gmail.com",
             "marcos@gmail.com"
         };
-        if (pessoas.size() < nPessoas) 
+        if (pessoas.size() > nPessoas) 
         {
             pessoas.resize(nPessoas);
         }
@@ -189,7 +197,8 @@ struct mensagem
     */
     void enviar()
     {
-        if (!logged){
+        if (!logged)
+        {
             erro("você precisa fazer login pra enviar uma mensagem.");
             return;
         }
@@ -202,23 +211,41 @@ struct mensagem
         std::cout << prompt << std::endl;
         std::cout << "0 - Cancelar" << std::endl;
         std::cout << "1 - Nova conversa" << std::endl;
-        for (int i=0; i<listaPessoas.size(); i++){
+        for (int i=0; i<listaPessoas.size(); i++)
+        {
             std::cout << i+2 << " - " << listaPessoas[i] << std::endl;
         }
 
         int indiceDestinatario;
 
-        while(true){
-            prompt = "=> ";
+        while(true)
+        {
+            prompt = "Digite um número: ";
             std::cout << prompt;
-            std::cin >> indiceDestinatario;
-            if (!std::cin or indiceDestinatario < 0 
-            or indiceDestinatario > nPessoas+1){
-                erro("Número não reconhecido. Tente novamente");
+            std::string strIndiceDestinatario;
+            std::getline(std::cin, strIndiceDestinatario);
+            bool flagNumero = false;
+            try 
+            {
+                indiceDestinatario = stoi(strIndiceDestinatario);
+            }
+            catch(...) 
+            {
+                flagNumero = true;
+            }
+            if (indiceDestinatario < 0 or indiceDestinatario > nPessoas+1)
+            {
+                flagNumero = true;
+            }
+            if (flagNumero) 
+            {
+                erro("Digite um número válido.");
+            }
+            else 
+            {
+                break;
             }
         }
-
-        
 
         if (indiceDestinatario == 0)
         {
@@ -231,7 +258,7 @@ struct mensagem
         else {
             std::string destinatario;
             std::cout << "Digite o email do recipiente: ";
-            std::cin >> destinatario;
+            std::getline(std::cin, destinatario);
             novaMensagem(destinatario);
         }
         
