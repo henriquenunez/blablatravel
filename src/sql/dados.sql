@@ -27,6 +27,8 @@ INSERT INTO MENSAGEM (USUARIO_ENVIA, USUARIO_RECEBE, MENSAGEM, DATA)
     VALUES ('dikson@gmail.com', 'hiram@gmail.com', 'Que passeio legal!', TO_TIMESTAMP('2021/07/13 12:33:12', 'YYYY/MM/DD HH24:MI:SS'));
 INSERT INTO MENSAGEM (USUARIO_ENVIA, USUARIO_RECEBE, MENSAGEM, DATA) 
     VALUES ('hiram@gmail.com', 'dikson@gmail.com', 'Daora ne? :)', TO_TIMESTAMP('2021/07/13 12:33:16', 'YYYY/MM/DD HH24:MI:SS'));
+INSERT INTO MENSAGEM (USUARIO_ENVIA, USUARIO_RECEBE, MENSAGEM, DATA) 
+    VALUES ('francisco@gmail.com', 'dikson@gmail.com', 'Oi dikson! A gente vai pro mesmo passeio ne?', TO_TIMESTAMP('2021/08/09 14:21:19', 'YYYY/MM/DD HH24:MI:SS'));
      
 -- insert tecnico
 INSERT INTO TECNICO (EMAIL, NOME, SENHA, TELEFONE, ENFASE) VALUES ('maria@gmail.com', 'Maria Eulalia', '1234', '+55(11)987872345', 'Database');
