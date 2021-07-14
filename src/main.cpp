@@ -2,6 +2,7 @@
 #include <string>
 #include <pqxx/pqxx>
 #include "blablatable.h"
+#include "msgsUsuarios.h"
 
 struct mensagem
 {
@@ -110,7 +111,7 @@ struct mensagem
     }
     
     /*
-    Faz logout do usuario.
+    Faz logout do usuário.
     */
     void logout()
     {
@@ -128,6 +129,15 @@ struct mensagem
         return;
     }
     
+    void mostraMensagens(std::vector<msg>& mensagens)
+    {
+        for (auto msgAtual: mensagens)
+        {
+            std::cout << msgAtual.conteudoMensagem << std::endl;
+        }
+        return;
+    }
+
     /*
     Mostra as últimas mensagens do usuário na tela.
     ┌─────────
@@ -145,9 +155,13 @@ struct mensagem
             erro("você precisa fazer login para ver suas mensagens.");
             return;
         }
-    
+
+        int nMensagens = 6;
+        std::vector<msg> mensagensParaMostrar = ultimasMensagens(
+            usuarioEmail,
+            nMensagens);
         
-        std::cout << "ainda nao foi implementado kkkk" << std::endl;
+        mostraMensagens(mensagensParaMostrar);
         return;
     }
 
@@ -167,6 +181,8 @@ struct mensagem
             erro("faça login para ver suas mensagens com alguém.");
             return;
         }
+
+        
     }
 
     /*
