@@ -1,8 +1,9 @@
-#include <iostream>
-#include <string>
-#include <pqxx/pqxx>
 #include "blablatable.h"
 #include "msgsUsuarios.h"
+
+#include <iostream>
+#include <string>
+#include <algorithm>
 
 struct mensagem
 {
@@ -125,7 +126,7 @@ struct mensagem
     
         std::string email;
         std::getline(std::cin, email);
-        bool validadeEmail = existeEmail(email);
+        bool validadeEmail = T.existeEmail(email);
         if (!validadeEmail)
         {
             erro("email inválido. Tente novamente.");
@@ -137,7 +138,7 @@ struct mensagem
 
         std::string senha;
         std::getline(std::cin, senha);
-        bool validadeSenha = matchEmailSenha(email, senha);
+        bool validadeSenha = T.matchEmailSenha(email, senha);
         if (!validadeSenha)
         {
             erro("senha inválida. Tente novamente.");
@@ -232,7 +233,7 @@ struct mensagem
         }
 
         int nMensagens = 6;
-        std::vector<msg> mensagensParaMostrar = ultimasMensagens(
+        std::vector<msg> mensagensParaMostrar = T.ultimasMensagens(
             usuarioEmail,
             nMensagens);
         
@@ -261,7 +262,7 @@ struct mensagem
         int nPessoas = 5;
         std::string outraPessoa;
 
-        std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
+        std::vector<std::string> listaPessoas = T.ultimasPessoas(usuarioEmail, nPessoas);
         std::vector<std::string> listaOpcoes = {"Cancelar", "Outro usuário"};
         listaOpcoes.insert(
             listaOpcoes.end(), 
@@ -282,7 +283,7 @@ struct mensagem
             std::string destinatario;
             std::cout << "Digite o email do usuário: ";
             std::getline(std::cin, destinatario);
-            if (!existeEmail(destinatario))
+            if (!T.existeEmail(destinatario))
             {
                 erro("Esse usuário não existe.");
                 return;
@@ -290,12 +291,12 @@ struct mensagem
             outraPessoa = destinatario;
         }
 
-        std::vector<msg> mensagensParaMostrar = ultimasMensagensIndividuais(
+        std::vector<msg> mensagensParaMostrar = T.ultimasMensagensIndividuais(
             usuarioEmail,
             outraPessoa,
             nMensagens);
         
-        reverse(mensagensParaMostrar.begin(), mensagensParaMostrar.end());
+        std::reverse(mensagensParaMostrar.begin(), mensagensParaMostrar.end());
         
         mostraMensagens(mensagensParaMostrar);
         return;
@@ -306,7 +307,7 @@ struct mensagem
     */
     void novaMensagem(std::string destinatario)
     {
-        if (!existeEmail(destinatario))
+        if (!T.existeEmail(destinatario))
         {
             erro("Esse usuário não existe.");
             return;
@@ -324,7 +325,7 @@ struct mensagem
         std::string mensagemDestinatario;
         std::getline(std::cin, mensagemDestinatario);
         
-        enviaMensagem(usuarioEmail, destinatario, mensagemDestinatario);
+        T.enviaMensagem(usuarioEmail, destinatario, mensagemDestinatario);
     }
 
     /*
@@ -339,7 +340,7 @@ struct mensagem
         }
 
         int nPessoas = 4;
-        std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
+        std::vector<std::string> listaPessoas = T.ultimasPessoas(usuarioEmail, nPessoas);
 
         std::string prompt = "Com quem você quer conversar?";
         std::cout << prompt << std::endl;
@@ -369,33 +370,6 @@ struct mensagem
         }
         
         return;
-    }
-
-    /*
-    Inicialização da comunicação com o banco de dados.
-    */
-    void init_db()
-    {
-        std::cout << "Initializing database...\n";
-        try { // dbname = public 
-           C = new pqxx::connection("user = postgres password = postgres123 \
-           hostaddr = 127.0.0.1 port = 5432");
-           if (C->is_open()) {
-              std::cout << "Opened database successfully: " << C->dbname() << std::endl;
-           } else {
-              std::cout << "Can't open database" << std::endl;
-              return;
-           }
-        } catch (const std::exception &e) {
-            std::cerr << e.what() << std::endl;
-            return;
-        }
-    }
-    
-    void close_db()
-    {
-        C->close();
-        delete C;
     }
     
     /*
@@ -466,13 +440,13 @@ struct mensagem
         return;
     }
 
-    pqxx::connection *C;
+    BlaBlaTable T; // Encapsulamento das operações de banco de dados.
 };
 
 int main()
 {
     mensagem estado;
-    estado.init_db();
+    //estado.init_db();
     estado.shell();
     return 0;
 }

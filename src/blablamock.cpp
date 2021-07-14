@@ -1,10 +1,12 @@
 #include "blablatable.h"
 
+#ifdef NO_DB
+
 /*
 Checa se o `email` existe no banco de dados.
 Retorna true caso positivo, falso caso contrário.
 */
-bool existeEmail(const std::string& email)
+bool BlaBlaTable::existeEmail(const std::string& email)
 {
     if (email.find("@") != std::string::npos)
         return true;
@@ -16,7 +18,7 @@ bool existeEmail(const std::string& email)
 Checa se a `senha` corresponde ao `email`.
 Retorna true caso positivo, falso caso contrário.
 */
-bool matchEmailSenha(const std::string& email, const std::string& senha)
+bool BlaBlaTable::matchEmailSenha(const std::string& email, const std::string& senha)
 {
     return true;
 }
@@ -24,7 +26,7 @@ bool matchEmailSenha(const std::string& email, const std::string& senha)
 /*
 Envia uma mensagem do remetente para o destinatario.
 */
-void enviaMensagem(
+void BlaBlaTable::enviaMensagem(
     const std::string& remetente, 
     const std::string& destinatario,
     const std::string& conteudoMensagem)
@@ -41,7 +43,7 @@ Retorna uma lista das últimas `nPessoas` que o `usuarioEmail` falou, ordernadas
 da mais recente para a mais antiga. Caso existam menos que `nPessoas`, retorna
 uma lista com todas as pessoas.
 */
-std::vector<std::string> ultimasPessoas(
+std::vector<std::string> BlaBlaTable::ultimasPessoas(
     const std::string& usuarioEmail, 
     int nPessoas)
 {
@@ -68,7 +70,7 @@ mas com o limite de uma por conversa. Caso existam menos que `nMensagens`,
 retorna um vector com o máximo de mensagens possíveis (sem duplicatas).
 O vetor é ordenado da mais recente pra mais antiga.
 */
-std::vector<msg> ultimasMensagens(
+std::vector<msg> BlaBlaTable::ultimasMensagens(
     const std::string& usuarioEmail,
     int nMensagens)
 {
@@ -89,7 +91,7 @@ Retorna um vector com as últimas `nMensagens` mensagens trocadas entre o
 o destinatario) 
 O vetor é ordenado da mais recente pra mais antiga.
 */
-std::vector<msg> ultimasMensagensIndividuais(
+std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
     const std::string& usuarioEmail,
     const std::string& outraPessoa,
     int nMensagens)
@@ -111,3 +113,5 @@ std::vector<msg> ultimasMensagensIndividuais(
     };
     return msgsResposta;
 }
+
+#endif
