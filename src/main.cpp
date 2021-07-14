@@ -59,8 +59,8 @@ struct mensagem
         "login - Loga com a sua conta.\n"+
         "logout - Desloga da sua conta.\n"+
         "chat - Mostra as ultimas mensagens.\n"+
-        "enviar - Envia uma nova mensagem.\n"+
         "ler - Mostra as mensagens com um contato.\n"+
+        "enviar - Envia uma nova mensagem.\n"+
         "info - Um pouco mais sobre o projeto.\n"+
         "sair - Finaliza a aplicacao.\n";
         std::cout << mensagemAjuda;
@@ -134,6 +134,13 @@ struct mensagem
     
     /*
     mostra as últimas mensagens do usuário na tela.
+    ┌─────────
+    │ 1/2/2018 bob@gmail.com
+    │ hey bro! I was wondering if...
+    ├─────────
+    │ 1/2/2016 alice@gmail.com
+    │ wassup? can you help with...
+    └─────────
     */
     void chat()
     {
@@ -149,6 +156,20 @@ struct mensagem
     }
 
     /*
+    mostra as ultimas mensagens com um contato especifico.
+    ┌─────────
+    │ 1/2/2018 bob@gmail.com
+    │ hey bro! I was wondering if...
+    ├─────────
+    │ 1/2/2016 alice@gmail.com
+    │ wassup? can you help with...
+    └─────────
+    */
+    void ler(){
+
+    }
+
+    /*
     envia uma nova mensagem para o email `destinatario`
     */
     void novaMensagem(std::string destinatario)
@@ -156,7 +177,7 @@ struct mensagem
         /*
         [help] checa se o email destinatario é valido
         */
-        
+
         std::string prompt = std::string()+
         "Nova mensagem para ["+destinatario+"]:\n"+
         "[>] ";
@@ -266,13 +287,6 @@ struct mensagem
     }
 
     /*
-    mostra as ultimas mensagens com um contato especifico.
-    */
-    void ler(){
-
-    }
-
-    /*
     Inicialização da comunicação com o banco de dados.
     */
     void init_db()
@@ -338,11 +352,13 @@ struct mensagem
             {
                 chat();
             }
-            else if (comando == "enviar"){
-                enviar();
-            }
-            else if (comando == "ler"){
+            else if (comando == "ler")
+            {
                 ler();
+            }
+            else if (comando == "enviar")
+            {
+                enviar();
             }
             else if (comando == "info")
             {
