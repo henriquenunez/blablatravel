@@ -77,8 +77,8 @@ std::vector<msg> ultimasMensagens(
     {
         msg("10:01", usuarioEmail, "aline@email.com", "oi, tudo bem?"),
         msg("09:58", usuarioEmail, "rodrigo@email.com", "acho que vou falar com ela..."),
-        msg("08:58", "spam@x.com", usuarioEmail, "médicos ODEIAM esse truque pra perder peso..."),
-        msg("5:58", "guia@email.com", usuarioEmail, "acho que você deixou seu iPhone no meu carro...")
+        msg("08:58", "spam@x.com", usuarioEmail, "médicos ODEIAM esse truque pra perder peso!"),
+        msg("5:58", "guia@email.com", usuarioEmail, "mano, acho que você deixou seu iPhone no meu carro kkk")
     };
     return msgsResposta;
 }

@@ -171,9 +171,14 @@ struct mensagem
         return;
     }
     
-    void mostraMensagens(std::vector<msg>& mensagens, int tamanhoMaxMsg)
+    void mostraMensagens(std::vector<msg>& mensagens)
     {
-        int tamanhoLinha = tamanhoMaxMsg;
+        if (mensagens.empty())
+        {
+            std::cout << "Nada pra mostrar por aqui..." << std::endl;
+            return;
+        }
+        int tamanhoLinha = 10;
         std::string reta;
         for (int i=0; i<tamanhoLinha; i++)
         {
@@ -183,32 +188,27 @@ struct mensagem
 
         for (int i=0; i<(int)mensagens.size(); i++)
         {
-            if (i == 0)
-            {
-                tela += std::string("┌");
-            }
-            else 
-            {
-                tela += std::string("├");
-            }
-            tela += reta + "\n";
+            tela += std::string("┌") + reta + "\n";
 
             msg atual = mensagens[i];
-
-            // reduz o tamanho da mensagem pra caber na tela
-            if (tamanhoMaxMsg != -1 and 
-                atual.conteudoMensagem.size() > tamanhoMaxMsg)
+            std::string prefixo, outraPessoa;
+            if (atual.remetente == usuarioEmail)
             {
-                atual.conteudoMensagem.resize(tamanhoMaxMsg);
-                atual.conteudoMensagem += std::string(3, '.');
+                prefixo = "(você) ";
+                outraPessoa = atual.destinatario;
             }
+            else
+            {
+                outraPessoa = atual.remetente;
+            }
+        
 
             tela += std::string()+ 
-            "│ " + atual.timeStamp + " " + atual.remetente + "\n"+
-            "│ " + atual.conteudoMensagem + "\n";
+            "│ " + outraPessoa + "\n"+
+            "│ " + atual.timeStamp + "\n"+
+            "│ " + prefixo + atual.conteudoMensagem + "\n";
             
         }
-        tela += std::string("└") + reta + "\n";
         std::cout << tela;
         return;
     }
@@ -236,8 +236,7 @@ struct mensagem
             usuarioEmail,
             nMensagens);
         
-        int tamanhoMaxMsg = 40;
-        mostraMensagens(mensagensParaMostrar, tamanhoMaxMsg);
+        mostraMensagens(mensagensParaMostrar);
         return;
     }
 
@@ -258,6 +257,48 @@ struct mensagem
             erro("faça login para ver suas mensagens com alguém.");
             return;
         }
+        int nMensagens = 6;
+        int nPessoas = 5;
+        std::string outraPessoa;
+
+        std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
+        std::vector<std::string> listaOpcoes = {"Cancelar", "Outro usuário"};
+        listaOpcoes.insert(
+            listaOpcoes.end(), 
+            listaPessoas.begin(), 
+            listaPessoas.end());
+
+        int indiceDestinatario = escolheDaLista(listaOpcoes);
+
+        if (indiceDestinatario == 0)
+        {
+            return;
+        }
+        else if (indiceDestinatario != 1)
+        {
+            outraPessoa = listaPessoas[indiceDestinatario-2];
+        }
+        else {
+            std::string destinatario;
+            std::cout << "Digite o email do usuário: ";
+            std::getline(std::cin, destinatario);
+            if (!existeEmail(destinatario))
+            {
+                erro("Esse usuário não existe.");
+                return;
+            }
+            outraPessoa = destinatario;
+        }
+
+        std::vector<msg> mensagensParaMostrar = ultimasMensagensIndividuais(
+            usuarioEmail,
+            outraPessoa,
+            nMensagens);
+        
+        reverse(mensagensParaMostrar.begin(), mensagensParaMostrar.end());
+        
+        mostraMensagens(mensagensParaMostrar);
+        return;
     }
 
     /*
@@ -297,7 +338,7 @@ struct mensagem
             return;
         }
 
-        int nPessoas = 3;
+        int nPessoas = 4;
         std::vector<std::string> listaPessoas = ultimasPessoas(usuarioEmail, nPessoas);
 
         std::string prompt = "Com quem você quer conversar?";
