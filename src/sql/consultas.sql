@@ -1,5 +1,5 @@
 -- Consulta todas os fotos de um passeio junto com as fotos tiradas no passeio pelos turistas
--- Neste caso estamos consultando um passeio ao cristo redentor, entao todos as fotos são links para fotos do cristo redentor
+-- Neste caso estamos consultando um passeio ao cristo redentor, entao todos as fotos sï¿½o links para fotos do cristo redentor
 (
 	SELECT FP.FOTO
 	FROM FOTOS_PASSEIO FP
@@ -13,8 +13,8 @@ UNION ALL
 	WHERE PART.GUIA = 'breno@gmail.com' AND PART.DATA=TO_TIMESTAMP('2021/08/10 14:00:00', 'YYYY/MM/DD HH24:MI:SS')
 );
 
--- Busca todos os passeio que possuem uma atração que pertencem a categoria 'Building'
--- Neste caso vai retornar todos os passeios relacionados com as atrações 'Eiffel Tower' e 'Christ the Redeemer'
+-- Busca todos os passeio que possuem uma atraï¿½ï¿½o que pertencem a categoria 'Building'
+-- Neste caso vai retornar todos os passeios relacionados com as atraï¿½ï¿½es 'Eiffel Tower' e 'Christ the Redeemer'
 SELECT PASSEIO.* 
 FROM PASSEIO 
 JOIN PASSEIO_ATRACAO
@@ -25,7 +25,7 @@ JOIN ATRACAO_CATEGORIA
 	ON ATRACAO_CATEGORIA.CATEGORIA = 'Building' AND ATRACAO_CATEGORIA.ATRACAO = ATRACAO.NOME;
     
     
--- Busca todas as pessoas que a pessoa já conversou por ordem, da mais recente até a mais antiga
+-- Busca todas as pessoas que a pessoa jï¿½ conversou por ordem, da mais recente atï¿½ a mais antiga
 SELECT E.USUARIO FROM (SELECT U.USUARIO, MAX(U.DATA) as DATA FROM (
 	(
 		SELECT USUARIO_RECEBE as USUARIO, DATA FROM MENSAGEM M 
@@ -48,13 +48,13 @@ WHERE
 ORDER BY DATA DESC 
 LIMIT(10)
 
--- Calcula quantidade de participações que aconteceram em cada tipo de atração (TODO nao ta mostrando zero)
+-- Calcula quantidade de participaï¿½ï¿½es que aconteceram em cada tipo de atraï¿½ï¿½o (TODO nao ta mostrando zero)
 SELECT PA.ATRACAO, COUNT(*) FROM PARTICIPACAO
 JOIN PASSEIO_ATRACAO PA 
 	ON PA.GUIA = PARTICIPACAO.GUIA AND PA.DATA = PARTICIPACAO.DATA
 GROUP BY PA.ATRACAO;
 
--- Calcula quantidade de participações que aconteceram em cada categoria de atração (TODO nao ta mostrando zero)
+-- Calcula quantidade de participaï¿½ï¿½es que aconteceram em cada categoria de atraï¿½ï¿½o (TODO nao ta mostrando zero)
 SELECT AC.CATEGORIA, COUNT(*) FROM PARTICIPACAO
 JOIN PASSEIO_ATRACAO PA 
 	ON PA.GUIA = PARTICIPACAO.GUIA AND PA.DATA = PARTICIPACAO.DATA
@@ -62,7 +62,7 @@ JOIN ATRACAO_CATEGORIA AC
 	ON AC.ATRACAO = PA.ATRACAO
 GROUP BY AC.CATEGORIA;
 
--- Quantidade de relatos que ocorreram em cada atração aceita (TODO nao ta mostrando zero)
+-- Quantidade de relatos que ocorreram em cada atraï¿½ï¿½o aceita (TODO nao ta mostrando zero)
 SELECT PA.ATRACAO, COUNT(*) 
 FROM RELATO_DE_VIAGEM RV
 JOIN PARTICIPACAO ON
