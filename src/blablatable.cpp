@@ -10,10 +10,19 @@ Retorna true caso positivo, falso caso contrário.
 */
 bool BlaBlaTable::existeEmail(const std::string& email)
 {
-    if (email.find("@") != std::string::npos)
-        return true;
-    else
-        return false;
+    // Pesquisa no banco de dados por alguem com esse email e senha.
+    
+    std::string q = "SELECT EMAIL FROM USUARIO WHERE EMAIL = '";
+    q += email; // Muito suscetível a SQL-injection. Perdão Ganesh.
+    q += "'";
+
+    // Create a non-transactional object. TODO: fix
+    pqxx::nontransaction N(*C);
+
+    // Executa a consulta.
+    pqxx::result R( N.exec( q ));
+
+    return R.size() > 0 ? true : false;
 }
 
 /*
@@ -22,7 +31,28 @@ Retorna true caso positivo, falso caso contrário.
 */
 bool BlaBlaTable::matchEmailSenha(const std::string& email, const std::string& senha)
 {
-    return true;
+    // Pesquisa no banco de dados por alguem com esse email e senha.
+    std::string q = "SELECT SENHA FROM USUARIO WHERE EMAIL = '";
+    q += email; // Muito suscetível a SQL-injection. Perdão Ganesh.
+    q += "'";
+
+    // Create a non-transactional object. TODO: fix
+    pqxx::nontransaction N(*C);
+
+    // Executa a consulta.
+    pqxx::result R( N.exec( q ));
+
+    bool validadeSenha = false;
+
+    // Verifica os resultados encontrados.
+    for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c)
+    {
+        std::string acq_senha = c[0].as<std::string>();
+        if (senha.compare(acq_senha) == 0) validadeSenha = true;
+        break;
+    }
+
+    return validadeSenha;
 }
 
 /*
@@ -33,11 +63,29 @@ void BlaBlaTable::enviaMensagem(
     const std::string& destinatario,
     const std::string& conteudoMensagem)
 {
-    std::string feedback = std::string()+
-    "<LOG DO MOCK>: a mensagem [" + conteudoMensagem + "] foi enviada de ["+
-    remetente + "] para [" + destinatario + "]";
-    std::cout << feedback << std::endl;
 
+    time_t momento_atual;
+    char buffer[256] = {0};
+    struct tm *info_tempo;
+
+    time( &momento_atual );
+
+    info_tempo = localtime( &momento_atual );
+
+    strftime(buffer, sizeof(buffer), "%Y/%m/%d %H:%M:%S", info_tempo);
+    std::string dataHora(buffer); // 2021/08/09 14:21:19
+
+    std::string q = "INSERT INTO MENSAGEM (USUARIO_ENVIA, USUARIO_RECEBE, MENSAGEM, DATA)\
+    VALUES ('";
+    q += remetente + "', '" + destinatario + "', '" + conteudoMensagem + "', TO_TIMESTAMP('"+ dataHora + "', 'YYYY/MM/DD HH24:MI:SS'));";
+    //francisco@gmail.com', 'dikson@gmail.com', 'Oi dikson! A gente vai pro mesmo passeio ne?', TO_TIMESTAMP('2021/08/09 14:21:19', 'YYYY/MM/DD HH24:MI:SS'));"
+
+    pqxx::work W(*C);
+
+    W.exec(q);
+    W.commit();
+
+    std::cout << "Mensagem enviada!\n";
 }
 
 /*
@@ -49,20 +97,39 @@ std::vector<std::string> BlaBlaTable::ultimasPessoas(
     const std::string& usuarioEmail, 
     int nPessoas)
 {
-    std::vector<std::string> pessoas = 
+
+    std::string q = "SELECT E.USUARIO FROM (SELECT U.USUARIO, MAX(U.DATA) as DATA FROM ("
+        "("
+            "SELECT USUARIO_RECEBE as USUARIO, DATA FROM MENSAGEM M "
+            "WHERE USUARIO_ENVIA = '"; q += usuarioEmail; q += "'"
+        ")"
+        "UNION"
+        "("
+            "SELECT USUARIO_ENVIA  as USUARIO, DATA FROM MENSAGEM "
+            "WHERE USUARIO_RECEBE = '"; q += usuarioEmail; q += "'"
+        ")) U "
+    "GROUP BY U.USUARIO "
+    "ORDER BY DATA DESC) E;";
+
+    // Create a non-transactional object. TODO: fix
+    pqxx::nontransaction N(*C);
+
+    // Executa a consulta.
+    pqxx::result R( N.exec( q ));
+    
+    std::vector<std::string> pessoas;
+    
+    // Verifica os resultados encontrados.
+    for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c)
     {
-        "dikson@gmail.com", 
-        "breno@usp.br",
-        "hiram@outlook.com",
-        "joao@gmail.com",
-        "marcos@gmail.com",
-        "marcosaurelio@gmail.com",
-        "naju@hotmail.com"
-    };
+        pessoas.push_back(c[0].as<std::string>()); // Copia string, de acordo com a referência do c++
+    }
+
     if (pessoas.size() > nPessoas) 
     {
         pessoas.resize(nPessoas);
     }
+
     return pessoas;
 }
 
@@ -76,14 +143,53 @@ std::vector<msg> BlaBlaTable::ultimasMensagens(
     const std::string& usuarioEmail,
     int nMensagens)
 {
+
+std::string q =
+
+"WITH MSG AS "
+"( "
+"     ( "
+"         SELECT USUARIO_RECEBE as USUARIO, DATA, MENSAGEM as M "
+"         FROM MENSAGEM "
+"         WHERE USUARIO_ENVIA = '"; q += usuarioEmail; q += "' "
+"     ) "
+"     UNION "
+"     ( "
+"         SELECT USUARIO_ENVIA as USUARIO, DATA, MENSAGEM as M "
+"         FROM MENSAGEM "
+"         WHERE USUARIO_RECEBE = '"; q += usuarioEmail; q += "' "
+"     ) "
+") "
+"SELECT A.USUARIO, A.DATA, A.M "
+"FROM MSG A "
+"LEFT OUTER JOIN MSG B ON A.USUARIO = B.USUARIO AND A.DATA < B.DATA "
+"WHERE B.USUARIO IS NULL; ";
+
+    // Create a non-transactional object. TODO: fix
+    pqxx::nontransaction N(*C);
+
+    // Executa a consulta.
+    pqxx::result R( N.exec( q ));
     
-    std::vector<msg> msgsResposta =
+    std::vector<msg> msgsResposta;
+    
+    // Verifica os resultados encontrados.
+    for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c)
     {
-        msg("10:01", usuarioEmail, "aline@email.com", "oi, tudo bem?"),
-        msg("09:58", usuarioEmail, "rodrigo@email.com", "acho que vou falar com ela..."),
-        msg("08:58", "spam@x.com", usuarioEmail, "médicos ODEIAM esse truque pra perder peso!"),
-        msg("5:58", "guia@email.com", usuarioEmail, "mano, acho que você deixou seu iPhone no meu carro kkk")
-    };
+        msgsResposta.push_back(
+        {
+            std::string(c[1].as<std::string>()),
+            std::string(c[0].as<std::string>()),
+            std::string(usuarioEmail),
+            std::string(c[2].as<std::string>())
+        }); // Copia string, de acordo com a referência do c++
+    }
+
+    if (msgsResposta.size() > nMensagens) 
+    {
+        msgsResposta.resize(nMensagens);
+    }
+
     return msgsResposta;
 }
 
@@ -98,21 +204,58 @@ std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
     const std::string& outraPessoa,
     int nMensagens)
 {
+
+    std::string q =
+"SELECT * "
+"FROM MENSAGEM "
+"WHERE "
+"    (USUARIO_ENVIA = '"; q += usuarioEmail; q += "' AND USUARIO_RECEBE = '"; q += outraPessoa; q += "') "
+"    OR (USUARIO_ENVIA = '"; q += outraPessoa; q += "' AND USUARIO_RECEBE = '"; q += usuarioEmail; q += "') "
+"ORDER BY DATA DESC "
+"LIMIT("; q += nMensagens; q += ")";
+    
     /*
-    Para o mock, eu implementei de um jeito que sempre vai ter mensagem entre
-    o usuario e a outra pessoa. Stonks?
-    */
     std::vector<msg> msgsResposta =
     {
-        msg("10:03", outraPessoa, usuarioEmail, "você sabe que impossível é uma palavra forte"),
-        msg("10:01", usuarioEmail, outraPessoa, "difícil ou impossivel?"),
-        msg("10:01", outraPessoa, usuarioEmail, "acho dificil"),
-        msg("10:00", usuarioEmail, outraPessoa, "fala pra mim"),
-        msg("10:00", usuarioEmail, outraPessoa, "quero"),
-        msg("10:00", outraPessoa, usuarioEmail, "quer saber mesmo?"),
-        msg("09:59", usuarioEmail, outraPessoa, "vc acha que eu tenho chance?"),
-        msg("09:58", usuarioEmail, outraPessoa, "mano, acho que vou falar com ela...")
-    };
+        {"10:03", outraPessoa, usuarioEmail, "você sabe que impossível é uma palavra forte"},
+        {"10:01", usuarioEmail, outraPessoa, "difícil ou impossivel?"},
+        {"10:01", outraPessoa, usuarioEmail, "acho dificil"},
+        {"10:00", usuarioEmail, outraPessoa, "fala pra mim"},
+        {"10:00", usuarioEmail, outraPessoa, "quero"},
+        {"10:00", outraPessoa, usuarioEmail, "quer saber mesmo?"},
+        {"09:59", usuarioEmail, outraPessoa, "vc acha que eu tenho chance?"},
+        {"09:58", usuarioEmail, outraPessoa, "mano, acho que vou falar com ela..."}
+    };*/
+    
+    // Create a non-transactional object. TODO: fix
+    pqxx::nontransaction N(*C);
+
+    // Executa a consulta.
+    pqxx::result R( N.exec( q ));
+    
+    std::vector<msg> msgsResposta;
+    
+    // Verifica os resultados encontrados.
+    for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c)
+    {
+        // TODO 
+
+        msgsResposta.push_back(
+        {
+            std::string(c[3].as<std::string>()),
+            std::string(c[0].as<std::string>()),
+            std::string(c[1].as<std::string>()),
+            std::string(c[2].as<std::string>())
+        }); // Copia string, de acordo com a referência do c++
+    }
+
+    if (msgsResposta.size() > nMensagens) 
+    {
+        msgsResposta.resize(nMensagens);
+    }
+
+    return msgsResposta;
+
     return msgsResposta;
 }
 

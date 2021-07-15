@@ -7,7 +7,7 @@ obj = $(src:.c??=.o)
 myprog=main
 
 #Postgres
-LDFLAGS = -lpqxx -lpq
+LDFLAGS = -lpqxx -lpq -fsanitize=address
 
 myprog: $(obj)
 	$(CXX) $(defs) $^ -o ../build/$@ $(LDFLAGS)

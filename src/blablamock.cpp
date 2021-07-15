@@ -99,6 +99,7 @@ std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
     /*
     Para o mock, eu implementei de um jeito que sempre vai ter mensagem entre
     o usuario e a outra pessoa. Stonks?
+    Stonks.
     */
     std::vector<msg> msgsResposta =
     {
