@@ -212,7 +212,7 @@ std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
 "    (USUARIO_ENVIA = '"; q += usuarioEmail; q += "' AND USUARIO_RECEBE = '"; q += outraPessoa; q += "') "
 "    OR (USUARIO_ENVIA = '"; q += outraPessoa; q += "' AND USUARIO_RECEBE = '"; q += usuarioEmail; q += "') "
 "ORDER BY DATA DESC "
-"LIMIT("; q += nMensagens; q += ")";
+"LIMIT("; q += std::to_string(nMensagens); q += ")";
     
     /*
     std::vector<msg> msgsResposta =
