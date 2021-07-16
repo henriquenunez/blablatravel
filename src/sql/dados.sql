@@ -30,6 +30,15 @@ INSERT INTO MENSAGEM (USUARIO_ENVIA, USUARIO_RECEBE, MENSAGEM, DATA)
 INSERT INTO MENSAGEM (USUARIO_ENVIA, USUARIO_RECEBE, MENSAGEM, DATA) 
     VALUES ('francisco@gmail.com', 'dikson@gmail.com', 'Oi dikson! A gente vai pro mesmo passeio ne?', TO_TIMESTAMP('2021/08/09 14:21:19', 'YYYY/MM/DD HH24:MI:SS'));
      
+-- insert usuario_idioma
+INSERT INTO USUARIO_IDIOMA (USUARIO, IDIOMA) VALUES ('breno@gmail.com', 'Portuguese');
+INSERT INTO USUARIO_IDIOMA (USUARIO, IDIOMA) VALUES ('breno@gmail.com', 'English');
+INSERT INTO USUARIO_IDIOMA (USUARIO, IDIOMA) VALUES ('dikson@gmail.com', 'German');
+INSERT INTO USUARIO_IDIOMA (USUARIO, IDIOMA) VALUES ('dikson@gmail.com', 'Portuguese');
+INSERT INTO USUARIO_IDIOMA (USUARIO, IDIOMA) VALUES ('hiram@gmail.com', 'English');
+INSERT INTO USUARIO_IDIOMA (USUARIO, IDIOMA) VALUES ('hiram@gmail.com', 'Spanish');
+INSERT INTO USUARIO_IDIOMA (USUARIO, IDIOMA) VALUES ('hiram@gmail.com', 'Portuguese');
+     
 -- insert tecnico
 INSERT INTO TECNICO (EMAIL, NOME, SENHA, TELEFONE, ENFASE) VALUES ('maria@gmail.com', 'Maria Eulalia', '1234', '+55(11)987872345', 'Database');
 INSERT INTO TECNICO (EMAIL, NOME, SENHA, TELEFONE, ENFASE) VALUES ('carlos@gmail.com', 'Carlos Jose', '1234', NULL, 'SQL');
@@ -48,7 +57,7 @@ INSERT INTO PASSEIO (GUIA, DATA, IDIOMA, TITULO, DESCRICAO, PAIS, CIDADE, LATITU
     'Created by French sculptor Paul Landowski and built by Brazilian engineer Heitor da Silva Costa', 'Brazil', 'Rio de Janeiro', 
     '-22.9519867', '-43.210986', 'On top of the mountain', 30, 10);
 INSERT INTO PASSEIO (GUIA, DATA, IDIOMA, TITULO, DESCRICAO, PAIS, CIDADE, LATITUDE, LONGITUDE, REFERENCIA, PRECO, VAGAS)
-    VALUES ('hiram@gmail.com', TO_TIMESTAMP('2021/08/11 15:00:00', 'YYYY/MM/DD HH24:MI:SS'), 'Portugues', 'Torre Eiffel', 
+    VALUES ('hiram@gmail.com', TO_TIMESTAMP('2021/08/11 15:00:00', 'YYYY/MM/DD HH24:MI:SS'), 'Portuguese', 'Torre Eiffel', 
     'Torre treliça de ferro do século XIX', NULL, 'Paris', 
     '48.8583701', '2.2922926', NULL, 20, 40);
 INSERT INTO PASSEIO (GUIA, DATA, IDIOMA, TITULO, DESCRICAO, PAIS, CIDADE, LATITUDE, LONGITUDE, REFERENCIA, PRECO, VAGAS)
