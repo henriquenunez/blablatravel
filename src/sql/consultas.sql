@@ -84,7 +84,7 @@ JOIN PASSEIO_ATRACAO PA
 	ON PA.GUIA = PARTICIPACAO.GUIA AND PA.DATA = PARTICIPACAO.DATA
 GROUP BY PA.ATRACAO;
 
--- Calcula quantidade de participa��es que aconteceram em cada categoria de atra��o (TODO nao ta mostrando zero)
+-- Calcula quantidade de participa��es que aconteceram em cada categoria de atração (TODO nao ta mostrando zero)
 SELECT AC.CATEGORIA, COUNT(*) FROM PARTICIPACAO
 JOIN PASSEIO_ATRACAO PA 
 	ON PA.GUIA = PARTICIPACAO.GUIA AND PA.DATA = PARTICIPACAO.DATA
@@ -92,7 +92,7 @@ JOIN ATRACAO_CATEGORIA AC
 	ON AC.ATRACAO = PA.ATRACAO
 GROUP BY AC.CATEGORIA;
 
--- Quantidade de relatos que ocorreram em cada atra��o aceita (TODO nao ta mostrando zero)
+-- Quantidade de relatos que ocorreram em cada atração aceita (TODO nao ta mostrando zero)
 SELECT PA.ATRACAO, COUNT(*) 
 FROM RELATO_DE_VIAGEM RV
 JOIN PARTICIPACAO ON
