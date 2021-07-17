@@ -2,8 +2,6 @@ CXX=g++
 src = $(wildcard *.c??)
 obj = $(src:.c??=.o)
 
-#defs = 
-
 myprog=main
 
 #Postgres

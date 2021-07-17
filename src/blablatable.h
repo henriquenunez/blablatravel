@@ -71,11 +71,15 @@ public:
         const std::string& usuarioEmail,
         const std::string& outraPessoa,
         int nMensagens);
+
+    bool is_ok();
 #ifndef NO_DB
 private:
     void init_db();
     void close_db();
 
+
+    bool _status;
     pqxx::connection *C;
 #endif
 };

@@ -115,4 +115,5 @@ std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
     return msgsResposta;
 }
 
+bool BlaBlaTable::is_ok() { return true; }
 #endif

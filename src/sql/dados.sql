@@ -7,7 +7,7 @@ INSERT INTO USUARIO (EMAIL , NOME_COMPLETO, IDENT_NACIONAL, USERNAME, BIOGRAFIA,
     VALUES ('hiram@gmail.com', 'Henrique Hiram Libutti Nunez', '861.755.970-52', 'henriquenunez', 'Brief biography about me', '1234', 'Brazil', '+55(16)9823485788', NULL, true, true);
 INSERT INTO USUARIO (EMAIL , NOME_COMPLETO, IDENT_NACIONAL, USERNAME, BIOGRAFIA, SENHA, PAIS, TELEFONE, FOTO, BOOL_GUIA, BOOL_TURISTA) 
     VALUES ('francisco@gmail.com', 'Francisco dos Reis', '792.692.070-30', 'franc', NULL, '1234', 'England', '+44(01)9823485781', NULL, true, true);
-    
+
 -- insert turista
 INSERT INTO TURISTA (USUARIO) VALUES ('dikson@gmail.com');
 INSERT INTO TURISTA (USUARIO) VALUES ('hiram@gmail.com');

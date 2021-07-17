@@ -36,7 +36,7 @@ bool BlaBlaTable::matchEmailSenha(const std::string& email, const std::string& s
     q += email; // Muito suscetível a SQL-injection. Perdão Ganesh.
     q += "'";
 
-    // Create a non-transactional object. TODO: fix
+    // Não transacional pois é uma leitura.
     pqxx::nontransaction N(*C);
 
     // Executa a consulta.
@@ -77,9 +77,12 @@ void BlaBlaTable::enviaMensagem(
 
     std::string q = "INSERT INTO MENSAGEM (USUARIO_ENVIA, USUARIO_RECEBE, MENSAGEM, DATA)\
     VALUES ('";
-    q += remetente + "', '" + destinatario + "', '" + conteudoMensagem + "', TO_TIMESTAMP('"+ dataHora + "', 'YYYY/MM/DD HH24:MI:SS'));";
-    //francisco@gmail.com', 'dikson@gmail.com', 'Oi dikson! A gente vai pro mesmo passeio ne?', TO_TIMESTAMP('2021/08/09 14:21:19', 'YYYY/MM/DD HH24:MI:SS'));"
+    q += remetente + "', '" +
+         destinatario +"', '" +
+         conteudoMensagem +
+         "', TO_TIMESTAMP('"+ dataHora + "', 'YYYY/MM/DD HH24:MI:SS'));";
 
+    // Transacional pois altera o banco.
     pqxx::work W(*C);
 
     W.exec(q);
@@ -111,7 +114,7 @@ std::vector<std::string> BlaBlaTable::ultimasPessoas(
     "GROUP BY U.USUARIO "
     "ORDER BY DATA DESC) E;";
 
-    // Create a non-transactional object. TODO: fix
+    // Não transacional pois é uma leitura.
     pqxx::nontransaction N(*C);
 
     // Executa a consulta.
@@ -165,7 +168,7 @@ std::string q =
 "LEFT OUTER JOIN MSG B ON A.USUARIO = B.USUARIO AND A.DATA < B.DATA "
 "WHERE B.USUARIO IS NULL; ";
 
-    // Create a non-transactional object. TODO: fix
+    // Não transacional pois é uma leitura.
     pqxx::nontransaction N(*C);
 
     // Executa a consulta.
@@ -213,7 +216,7 @@ std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
 "    OR (USUARIO_ENVIA = '"; q += outraPessoa; q += "' AND USUARIO_RECEBE = '"; q += usuarioEmail; q += "') "
 "ORDER BY DATA DESC "
 "LIMIT("; q += std::to_string(nMensagens); q += ")";
-    
+
     /*
     std::vector<msg> msgsResposta =
     {
@@ -226,8 +229,8 @@ std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
         {"09:59", usuarioEmail, outraPessoa, "vc acha que eu tenho chance?"},
         {"09:58", usuarioEmail, outraPessoa, "mano, acho que vou falar com ela..."}
     };*/
-    
-    // Create a non-transactional object. TODO: fix
+
+    // Não transacional pois é uma leitura.
     pqxx::nontransaction N(*C);
 
     // Executa a consulta.
@@ -238,8 +241,6 @@ std::vector<msg> BlaBlaTable::ultimasMensagensIndividuais(
     // Verifica os resultados encontrados.
     for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c)
     {
-        // TODO 
-
         msgsResposta.push_back(
         {
             std::string(c[3].as<std::string>()),
@@ -275,12 +276,13 @@ Inicialização da comunicação com o banco de dados.
 */
 void BlaBlaTable::init_db()
 {
+    _status = false;
     if (C != NULL) delete C;
 
     std::cout << "Conectando ao DB\n";
     try
     {
-       
+
         // Ve se uma string de conexão foi passada
         char* conn_str = getenv("PSQL_CONN");
 
@@ -296,23 +298,33 @@ void BlaBlaTable::init_db()
         }
         else
         {
-          std::cout << "Não foi possível conectar" << std::endl;
+          std::cout << "Não foi possível conectar!" << std::endl;
           return;
         }
     }
     catch (const std::exception &e)
     {
-        std::cerr << e.what() << std::endl;
-        return;
+        std::cout << "Não foi possível conectar!" << std::endl;
+	return;
     }
+    _status = true;
 }
 
+/*
+Término da comunicação com o banco de dados.
+*/
 void BlaBlaTable::close_db()
 {
-    C->close();
-    delete C;
+    if (C != NULL)
+    {
+	if(C->is_open()) C->close();
+	delete C;
+    }
+
     C = NULL;
 }
 
+// Validade
+bool BlaBlaTable::is_ok() { return _status; }
 
 #endif

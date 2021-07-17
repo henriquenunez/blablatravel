@@ -383,8 +383,9 @@ struct mensagem
         "# Bem vindo ao chat blablatravel!\n"+
         "# Digite \"ajuda\" para mais informacoes.\n";
         std::cout << bemVindo;
-        
-    
+
+	if (!T.is_ok()) { std::cout << "Saindo...\n"; return; }
+
         while(true)
         {
             std::cout << "> " ;
